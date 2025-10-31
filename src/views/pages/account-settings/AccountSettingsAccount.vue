@@ -1,96 +1,91 @@
 <script setup>
-import { defineProps } from 'vue'
+const isFormValid = ref(false)
+const refForm = ref()
 
-const props = defineProps({
-  accountData: {
-    type: Object,
-    // required: true,
-  },
-})
-console.log(props.accountData)
 const refInputEl = ref()
+const isSubmitting = ref(false)
 const isConfirmDialogOpen = ref(false)
-const accountDataLocal = ref((props.accountData))
+const accountData = ref({})
+const accountDataLocal = ref((accountData))
 const isAccountDeactivated = ref(false)
 const validateAccountDeactivation = [v => !!v || 'Please confirm account deactivation']
 
 const resetForm = () => {
-  accountDataLocal.value = (props.accountData)
+  accountDataLocal.value = (accountData)
 }
 
-const changeAvatar = file => {
-  const fileReader = new FileReader()
-  const { files } = file.target
-  if (files && files.length) {
-    fileReader.readAsDataURL(files[0])
-    fileReader.onload = () => {
-      if (typeof fileReader.result === 'string')
-        accountDataLocal.value.avatarImg = fileReader.result
-    }
+const changeAvatar = e => {
+  const file = e.target.files[0]
+  if (!file) return
+
+  // For preview
+  const reader = new FileReader()
+  reader.readAsDataURL(file)
+  reader.onload = () => {
+    accountDataLocal.value.avatarPreview = reader.result // for UI preview
   }
+
+  // Keep the actual File object for uploading
+  accountDataLocal.value.avatarFile = file
 }
+
 
 // reset avatar image
 const resetAvatar = () => {
-  accountDataLocal.value.avatarImg = props.accountData.avatarImg
+  accountDataLocal.value.avatarImg = accountData.avatarImg
 }
 
-const timezones = [
-  '(GMT-11:00) International Date Line West',
-  '(GMT-11:00) Midway Island',
-  '(GMT-10:00) Hawaii',
-  '(GMT-09:00) Alaska',
-  '(GMT-08:00) Pacific Time (US & Canada)',
-  '(GMT-08:00) Tijuana',
-  '(GMT-07:00) Arizona',
-  '(GMT-07:00) Chihuahua',
-  '(GMT-07:00) La Paz',
-  '(GMT-07:00) Mazatlan',
-  '(GMT-07:00) Mountain Time (US & Canada)',
-  '(GMT-06:00) Central America',
-  '(GMT-06:00) Central Time (US & Canada)',
-  '(GMT-06:00) Guadalajara',
-  '(GMT-06:00) Mexico City',
-  '(GMT-06:00) Monterrey',
-  '(GMT-06:00) Saskatchewan',
-  '(GMT-05:00) Bogota',
-  '(GMT-05:00) Eastern Time (US & Canada)',
-  '(GMT-05:00) Indiana (East)',
-  '(GMT-05:00) Lima',
-  '(GMT-05:00) Quito',
-  '(GMT-04:00) Atlantic Time (Canada)',
-  '(GMT-04:00) Caracas',
-  '(GMT-04:00) La Paz',
-  '(GMT-04:00) Santiago',
-  '(GMT-03:30) Newfoundland',
-  '(GMT-03:00) Brasilia',
-  '(GMT-03:00) Buenos Aires',
-  '(GMT-03:00) Georgetown',
-  '(GMT-03:00) Greenland',
-  '(GMT-02:00) Mid-Atlantic',
-  '(GMT-01:00) Azores',
-  '(GMT-01:00) Cape Verde Is.',
-  '(GMT+00:00) Casablanca',
-  '(GMT+00:00) Dublin',
-  '(GMT+00:00) Edinburgh',
-  '(GMT+00:00) Lisbon',
-  '(GMT+00:00) London',
-]
+const fetchAccountData = async () => {
+  const { id } = useCookie('userData').value.contact
+  const { data, error } = await useApi(`/contact/${id}`)
 
-const currencies = [
-  'USD',
-  'EUR',
-  'GBP',
-  'AUD',
-  'BRL',
-  'CAD',
-  'CNY',
-  'CZK',
-  'DKK',
-  'HKD',
-  'HUF',
-  'INR',
-]
+  if (error.value)
+    console.log(error.value)
+  else if (data.value)
+    console.log(data.value.data)
+  accountData.value = data.value.data
+
+}
+onMounted(() => {
+  fetchAccountData()
+})
+const onSubmit = async () => {
+  const data = accountDataLocal.value;
+  isSubmitting.value = true
+
+  try {
+    const { valid } = await refForm.value?.validate();
+
+    if (!valid) return;
+
+    // for file upload, use FormData
+    const formData = new FormData();
+    for (const key in data) {
+      // Skip avatarFile (we handle it below)
+      if (key === 'avatarFile') continue
+      formData.append(key, data[key])
+    }
+
+    // Only append avatar file if exists
+    if (data.avatarFile) {
+      formData.append('avatar', data.avatarFile)
+    }
+    const res = await $api(`/contact/${data.id}`, {
+      method: 'PUT',
+      body: formData,
+    })
+    nextTick(() => {
+      refForm.value?.resetValidation()
+    })
+
+  } catch (error) {
+    console.error(error);
+  }
+  finally {
+    isSubmitting.value = false
+  }
+
+}
 </script>
 
 <template>
@@ -126,17 +121,18 @@ const currencies = [
 
         <VCardText class="pt-2">
           <!-- 👉 Form -->
-          <VForm class="mt-3">
+          <VForm class="mt-3" ref="refForm" v-model="isFormValid" @submit.prevent="onSubmit">
             <VRow>
               <!-- 👉 First Name -->
               <VCol md="6" cols="12">
-                <AppTextField v-model="accountDataLocal.name" placeholder="John" label="Name" />
+                <AppTextField v-model="accountDataLocal.name" placeholder="John" label="Name"
+                  :rules="[requiredValidator]" />
               </VCol>
 
               <!-- 👉 Email -->
               <VCol cols="12" md="6">
                 <AppTextField v-model="accountDataLocal.email" label="E-mail" placeholder="johndoe@gmail.com"
-                  type="email" />
+                  type="email" :rules="[requiredValidator]" />
               </VCol>
 
               <!-- 👉 Phone -->
@@ -169,7 +165,10 @@ const currencies = [
 
               <!-- 👉 Form Actions -->
               <VCol cols="12" class="d-flex flex-wrap gap-4">
-                <VBtn>Save changes</VBtn>
+                <VBtn type="submit" :disabled="isSubmitting">
+                  <VProgressCircular v-if="isSubmitting" indeterminate size="20" width="2" class="me-2" />
+                  {{ isSubmitting ? 'Saving...' : 'Save changes' }}
+                </VBtn>
 
                 <VBtn color="secondary" variant="tonal" type="reset" @click.prevent="resetForm">
                   Cancel

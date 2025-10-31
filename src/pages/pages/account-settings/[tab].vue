@@ -1,11 +1,9 @@
 <script setup>
-import { useApi } from '@/composables/useApi'
 import AccountSettingsAccount from '@/views/pages/account-settings/AccountSettingsAccount.vue'
 import AccountSettingsBillingAndPlans from '@/views/pages/account-settings/AccountSettingsBillingAndPlans.vue'
 import AccountSettingsConnections from '@/views/pages/account-settings/AccountSettingsConnections.vue'
 import AccountSettingsNotification from '@/views/pages/account-settings/AccountSettingsNotification.vue'
 import AccountSettingsSecurity from '@/views/pages/account-settings/AccountSettingsSecurity.vue'
-import { onMounted } from 'vue'
 
 const route = useRoute('pages-account-settings-tab')
 const accountObj = ref({})
@@ -45,22 +43,6 @@ const tabs = [
 
 definePage({ meta: { navActiveLink: 'pages-account-settings-tab' } })
 
-const fetchAccountData = async () => {
-  if (route.params.tab === 'account') {
-
-    const { data, error } = await useApi('/contact/3')
-
-    if (error.value)
-      console.log(error.value)
-    else if (data.value)
-      console.log(data.value.data)
-    accountObj.value = data.value.data
-  }
-}
-onMounted(() => {
-  fetchAccountData()
-})
-
 </script>
 
 <template>
@@ -76,7 +58,7 @@ onMounted(() => {
     <VWindow v-model="activeTab" class="mt-6 disable-tab-transition" :touch="false">
       <!-- Account -->
       <VWindowItem value="account">
-        <AccountSettingsAccount v-if="accountObj" :accountData="accountObj" />
+        <AccountSettingsAccount />
       </VWindowItem>
 
       <!-- Security -->
