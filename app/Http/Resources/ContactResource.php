@@ -17,6 +17,8 @@ class ContactResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'center_id' => $this->center_id,
+            'avatarImg' => 'C:\Users\ihajjali\Documents\squarely-r2\squarely-app\app-frontend\public\images\avatars',//$this->image,
             'name' => $this->name,
             'email' => $this->email,
             'phone' => $this->phone,

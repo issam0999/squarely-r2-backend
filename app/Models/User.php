@@ -22,6 +22,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'center_id',
+        'contact_id',
     ];
 
     /**
@@ -45,5 +47,14 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function center()
+    {
+        return $this->belongsTo(Center::class);
+    }
+    public function contact()
+    {
+        return $this->belongsTo(Contact::class);
     }
 }

@@ -23,14 +23,16 @@ class StoreContactRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'center_id' => 'required|exists:centers,id',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
             'type_id' => 'nullable|integer',
             'date_of_birth' => 'nullable|date',
             'country_id' => 'nullable|integer',
             'city_id' => 'nullable|integer',
-            'center_id' => 'nullable|exists:centers,id',
             'status' => 'nullable|boolean',
+            'address' => 'nullable|string|max:500',
+
         ];
     }
 }

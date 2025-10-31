@@ -53,7 +53,18 @@ class ContactController extends Controller
      */
     public function update(UpdateContactRequest $request, Contact $contact)
     {
-        $contact->update($request->validated());
+        // Get validated (non-file) data
+        $data = $request->validated();
+
+        // If an avatar file is uploaded
+        /** @var \Illuminate\Http\Request $request */
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $data['avatar'] = $path;
+        }
+
+        // Update the contact
+        $contact->update($data);
 
         return ApiResponse::success(new ContactResource($contact), 'Contact updated successfully');
     }
