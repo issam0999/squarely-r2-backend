@@ -1,101 +1,84 @@
 <script setup>
-const isFormValid = ref(false)
-const refForm = ref()
+const isFormValid = ref(false);
+const refForm = ref();
 
-const refInputEl = ref()
-const isSubmitting = ref(false)
-const isConfirmDialogOpen = ref(false)
-const accountData = ref({})
-const accountDataLocal = ref((accountData))
-const isAccountDeactivated = ref(false)
-const validateAccountDeactivation = [v => !!v || 'Please confirm account deactivation']
+const refInputEl = ref();
+const isSubmitting = ref(false);
+const isConfirmDialogOpen = ref(false);
+const accountData = ref({});
+const accountDataLocal = ref(accountData);
+const isAccountDeactivated = ref(false);
+const validateAccountDeactivation = [
+  (v) => !!v || "Please confirm account deactivation",
+];
 
 const resetForm = () => {
-  accountDataLocal.value = (accountData)
-}
+  accountDataLocal.value = accountData;
+};
 
-const changeAvatar = e => {
-  const file = e.target.files[0]
-  if (!file) return
+const changeAvatar = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
   // For preview
-  const reader = new FileReader()
-  reader.readAsDataURL(file)
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
   reader.onload = () => {
-    accountDataLocal.value.avatarPreview = reader.result // for UI preview
-  }
-
-  // Keep the actual File object for uploading
-  accountDataLocal.value.avatarFile = file
-}
-
+    accountDataLocal.value.image = reader.result; // for UI preview
+    accountDataLocal.value.image_url = reader.result; // for UI preview
+  };
+};
 
 // reset avatar image
 const resetAvatar = () => {
-  accountDataLocal.value.avatarImg = accountData.avatarImg
-}
+  accountDataLocal.value.image_url = accountData.image_url;
+};
 
 const fetchAccountData = async () => {
-  const { id } = useCookie('userData').value.contact
-  const { data, error } = await useApi(`/contact/${id}`)
-
-  if (error.value)
-    console.log(error.value)
-  else if (data.value)
-    console.log(data.value.data)
-  accountData.value = data.value.data
-
-}
+  accountData.value = useCookie("userData").value.contact;
+};
 onMounted(() => {
-  fetchAccountData()
-})
+  fetchAccountData();
+});
 const onSubmit = async () => {
   const data = accountDataLocal.value;
-  isSubmitting.value = true
-
+  isSubmitting.value = true;
   try {
     const { valid } = await refForm.value?.validate();
-
     if (!valid) return;
+    const res = await $api(`contact/${data.id}`, {
+      method: "PUT",
+      body: data,
+    });
+    const userDataCookie = useCookie("userData");
+    userDataCookie.value = {
+      ...userDataCookie.value,
+      contact: res.data,
+    };
 
-    // for file upload, use FormData
-    const formData = new FormData();
-    for (const key in data) {
-      // Skip avatarFile (we handle it below)
-      if (key === 'avatarFile') continue
-      formData.append(key, data[key])
-    }
-
-    // Only append avatar file if exists
-    if (data.avatarFile) {
-      formData.append('avatar', data.avatarFile)
-    }
-    const res = await $api(`/contact/${data.id}`, {
-      method: 'PUT',
-      body: formData,
-    })
     nextTick(() => {
-      refForm.value?.resetValidation()
-    })
-
+      refForm.value?.resetValidation();
+    });
   } catch (error) {
     console.error(error);
+  } finally {
+    isSubmitting.value = false;
   }
-  finally {
-    isSubmitting.value = false
-  }
-
-}
+};
 </script>
 
 <template>
   <VRow>
     <VCol cols="12">
       <VCard>
-        <pre>{{ accountDataLocal }}</pre>
         <VCardText class="d-flex">
           <!-- 👉 Avatar -->
-          <VAvatar rounded size="100" class="me-6" :image="accountDataLocal.avatarImg" />
+          <VAvatar
+            rounded
+            size="100"
+            class="me-6"
+            :image="accountDataLocal.image_url"
+          />
 
           <!-- 👉 Upload Photo -->
           <form class="d-flex flex-column justify-center gap-4">
@@ -105,9 +88,22 @@ const onSubmit = async () => {
                 <span class="d-none d-sm-block">Upload new photo</span>
               </VBtn>
 
-              <input ref="refInputEl" type="file" name="file" accept=".jpeg,.png,.jpg,GIF" hidden @input="changeAvatar">
+              <input
+                ref="refInputEl"
+                type="file"
+                name="file"
+                accept=".jpeg,.png,.jpg,GIF"
+                hidden
+                @input="changeAvatar"
+              />
 
-              <VBtn type="reset" size="small" color="secondary" variant="tonal" @click="resetAvatar">
+              <VBtn
+                type="reset"
+                size="small"
+                color="secondary"
+                variant="tonal"
+                @click="resetAvatar"
+              >
                 <span class="d-none d-sm-block">Reset</span>
                 <VIcon icon="tabler-refresh" class="d-sm-none" />
               </VBtn>
@@ -121,56 +117,100 @@ const onSubmit = async () => {
 
         <VCardText class="pt-2">
           <!-- 👉 Form -->
-          <VForm class="mt-3" ref="refForm" v-model="isFormValid" @submit.prevent="onSubmit">
+          <VForm
+            class="mt-3"
+            ref="refForm"
+            v-model="isFormValid"
+            @submit.prevent="onSubmit"
+          >
             <VRow>
               <!-- 👉 First Name -->
               <VCol md="6" cols="12">
-                <AppTextField v-model="accountDataLocal.name" placeholder="John" label="Name"
-                  :rules="[requiredValidator]" />
+                <AppTextField
+                  v-model="accountDataLocal.name"
+                  placeholder="John"
+                  label="Name"
+                  :rules="[requiredValidator]"
+                />
               </VCol>
 
               <!-- 👉 Email -->
               <VCol cols="12" md="6">
-                <AppTextField v-model="accountDataLocal.email" label="E-mail" placeholder="johndoe@gmail.com"
-                  type="email" :rules="[requiredValidator]" />
+                <AppTextField
+                  v-model="accountDataLocal.email"
+                  label="E-mail"
+                  placeholder="johndoe@gmail.com"
+                  type="email"
+                  :rules="[requiredValidator]"
+                />
               </VCol>
 
               <!-- 👉 Phone -->
               <VCol cols="12" md="6">
-                <AppTextField v-model="accountDataLocal.phone" label="Phone Number" placeholder="+1 (917) 543-9876" />
+                <AppTextField
+                  v-model="accountDataLocal.phone"
+                  label="Phone Number"
+                  placeholder="+1 (917) 543-9876"
+                />
               </VCol>
 
               <!-- 👉 Address -->
               <VCol cols="12" md="6">
-                <AppTextField v-model="accountDataLocal.address" label="Address"
-                  placeholder="123 Main St, New York, NY 10001" />
+                <AppTextField
+                  v-model="accountDataLocal.address"
+                  label="Address"
+                  placeholder="123 Main St, New York, NY 10001"
+                />
               </VCol>
 
               <!-- 👉 Country -->
               <VCol cols="12" md="6">
-                <AppSelect v-model="accountDataLocal.country" label="Country"
-                  :items="['USA', 'Canada', 'UK', 'India', 'Australia']" placeholder="Select Country" />
+                <AppSelect
+                  v-model="accountDataLocal.country"
+                  label="Country"
+                  :items="['USA', 'Canada', 'UK', 'India', 'Australia']"
+                  placeholder="Select Country"
+                />
               </VCol>
 
               <!-- 👉 State -->
               <VCol cols="12" md="6">
-                <AppTextField v-model="accountDataLocal.city_id" label="City" placeholder="New York" />
+                <AppTextField
+                  v-model="accountDataLocal.city_id"
+                  label="City"
+                  placeholder="New York"
+                />
               </VCol>
 
               <!-- 👉 Language -->
               <VCol cols="12" md="6">
-                <AppSelect v-model="accountDataLocal.language" label="Language" placeholder="Select Language"
-                  :items="['English', 'Spanish', 'Arabic', 'Hindi', 'Urdu']" />
+                <AppSelect
+                  v-model="accountDataLocal.language"
+                  label="Language"
+                  placeholder="Select Language"
+                  :items="['English', 'Spanish', 'Arabic', 'Hindi', 'Urdu']"
+                />
               </VCol>
 
               <!-- 👉 Form Actions -->
               <VCol cols="12" class="d-flex flex-wrap gap-4">
                 <VBtn type="submit" :disabled="isSubmitting">
-                  <VProgressCircular v-if="isSubmitting" indeterminate size="20" width="2" class="me-2" />
-                  {{ isSubmitting ? 'Saving...' : 'Save changes' }}
+                  <VProgressCircular
+                    v-if="isSubmitting"
+                    indeterminate
+                    size="20"
+                    width="2"
+                    class="me-2"
+                  />
+                  {{ isSubmitting ? "Saving..." : "Save changes" }}
                 </VBtn>
 
-                <VBtn color="secondary" variant="tonal" type="reset" @click.prevent="resetForm">
+                <VBtn
+                  color="secondary"
+                  variant="tonal"
+                  type="reset"
+                  @click.prevent="resetForm"
+                >
                   Cancel
                 </VBtn>
               </VCol>
@@ -186,11 +226,19 @@ const onSubmit = async () => {
         <VCardText>
           <!-- 👉 Checkbox and Button  -->
           <div>
-            <VCheckbox v-model="isAccountDeactivated" :rules="validateAccountDeactivation"
-              label="I confirm my account deactivation" />
+            <VCheckbox
+              v-model="isAccountDeactivated"
+              :rules="validateAccountDeactivation"
+              label="I confirm my account deactivation"
+            />
           </div>
 
-          <VBtn :disabled="!isAccountDeactivated" color="error" class="mt-6" @click="isConfirmDialogOpen = true">
+          <VBtn
+            :disabled="!isAccountDeactivated"
+            color="error"
+            class="mt-6"
+            @click="isConfirmDialogOpen = true"
+          >
             Deactivate Account
           </VBtn>
         </VCardText>
@@ -199,8 +247,12 @@ const onSubmit = async () => {
   </VRow>
 
   <!-- Confirm Dialog -->
-  <ConfirmDialog v-model:is-dialog-visible="isConfirmDialogOpen"
-    confirmation-question="Are you sure you want to deactivate your account?" confirm-title="Deactivated!"
-    confirm-msg="Your account has been deactivated successfully." cancel-title="Cancelled"
-    cancel-msg="Account Deactivation Cancelled!" />
+  <ConfirmDialog
+    v-model:is-dialog-visible="isConfirmDialogOpen"
+    confirmation-question="Are you sure you want to deactivate your account?"
+    confirm-title="Deactivated!"
+    confirm-msg="Your account has been deactivated successfully."
+    cancel-title="Cancelled"
+    cancel-msg="Account Deactivation Cancelled!"
+  />
 </template>
