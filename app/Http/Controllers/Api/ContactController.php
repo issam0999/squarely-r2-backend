@@ -53,7 +53,14 @@ class ContactController extends Controller
      */
     public function update(UpdateContactRequest $request, Contact $contact)
     {
-        $contact->update($request->validated());
+        $data = $request->validated();
+
+        if (isset($data['image'])) {
+            $relativePath = $contact->saveImage($data['image']);
+            $data['image'] = $relativePath;
+        }
+
+        $contact->update($data);
 
         return ApiResponse::success(new ContactResource($contact), 'Contact updated successfully');
     }

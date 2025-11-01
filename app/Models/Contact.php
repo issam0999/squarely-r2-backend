@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Helpers\FileHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Contact extends Model
 {
@@ -21,8 +23,10 @@ class Contact extends Model
         'country_id',
         'center_id',
         'status',
-        'address','city_id',
+        'address',
+        'city_id',
         'image',
+        'avatar'
     ];
     protected $casts = [
         'date_of_birth' => 'date',
@@ -31,5 +35,31 @@ class Contact extends Model
     public function center()
     {
         return $this->belongsTo(Center::class);
+    }
+
+    /**
+     * Get the base path for images.
+     * Can be reused anywhere.
+     */
+    public static function getBasePath($centerId)
+    {
+        return 'centers/' . $centerId . '/contacts';
+    }
+    /**
+     * Get full public URL
+     */
+    public function getImageUrl($filePath)
+    {
+        return asset('storage/' . $filePath);
+    }
+    public function saveImage($image)
+    {
+        $basePath = self::getBasePath($this->center_id);
+
+        // Delete old image if it exists
+        if ($this->image) {
+            FileHelper::deleteImage($this->image);
+        }
+        return FileHelper::saveBase64Image($image, $basePath);
     }
 }

@@ -31,6 +31,7 @@ class UpdateContactRequest extends FormRequest
             'city_id' => 'nullable|integer',
             'center_id' => 'nullable|exists:centers,id',
             'status' => 'nullable|boolean',
+            'image' => 'nullable|string', // base64 string, optional
         ];
     }
 }

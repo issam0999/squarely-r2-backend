@@ -17,6 +17,7 @@ class ContactResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'image_url' => $this->image ? $this->getImageUrl($this->image) : null,
             'name' => $this->name,
             'email' => $this->email,
             'phone' => $this->phone,

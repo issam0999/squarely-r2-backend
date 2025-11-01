@@ -23,6 +23,7 @@ class StoreContactRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'image' => 'nullable|string',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
             'type_id' => 'nullable|integer',
