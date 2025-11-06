@@ -33,8 +33,13 @@ return new class extends Migration
      */
     public function down(): void
     {
+<<<<<<< HEAD
         Schema::table('contacts', function (Blueprint $table) {
             //
         });
+=======
+        Schema::dropIfExists('contacts');
+
+>>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
     }
 };

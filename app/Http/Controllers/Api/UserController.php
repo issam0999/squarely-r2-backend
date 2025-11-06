@@ -17,7 +17,11 @@ class UserController extends Controller
      */
     public function index()
     {
+<<<<<<< HEAD
         $user = User::all();
+=======
+        $user = User::with('contact')->get();
+>>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
 
         return ApiResponse::success(UserResource::collection($user), 'Users retrieved successfully');
     }
@@ -47,6 +51,10 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+<<<<<<< HEAD
+=======
+        $user->load('contact');
+>>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
         return ApiResponse::success(new UserResource($user), 'User retrieved successfully');
     }
 

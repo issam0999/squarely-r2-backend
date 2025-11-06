@@ -37,7 +37,11 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
+<<<<<<< HEAD
         return $this->state(fn (array $attributes) => [
+=======
+        return $this->state(fn(array $attributes) => [
+>>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
             'email_verified_at' => null,
         ]);
     }
