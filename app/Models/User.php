@@ -22,13 +22,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-<<<<<<< HEAD
-        'center_id',
-        'contact_id',
-=======
         'contact_id',
         'center_id',
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
     ];
 
     /**
@@ -53,20 +48,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-<<<<<<< HEAD
-
-    public function center()
-    {
-        return $this->belongsTo(Center::class);
-    }
-=======
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
     public function contact()
     {
         return $this->belongsTo(Contact::class);
     }
-<<<<<<< HEAD
-=======
 
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
 }

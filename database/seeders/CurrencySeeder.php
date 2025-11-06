@@ -27,11 +27,7 @@ class CurrencySeeder extends Seeder
             ['code' => 'INR', 'name' => '',],
         ];
 
-<<<<<<< HEAD
-       foreach ($currencies as $currency) {
-=======
         foreach ($currencies as $currency) {
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
             DB::table('currencies')->updateOrInsert(
                 ['code' => $currency['code']], // Match by code
                 [

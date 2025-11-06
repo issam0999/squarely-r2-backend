@@ -22,10 +22,6 @@ return new class extends Migration
             $table->string('email1')->nullable();
             $table->string('logo')->nullable();
             $table->timestamps();
-<<<<<<< HEAD
-
-=======
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
         });
     }
 
@@ -34,12 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-<<<<<<< HEAD
-        Schema::table('centers', function (Blueprint $table) {
-            //
-        });
-=======
         Schema::dropIfExists('centers');
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
     }
 };

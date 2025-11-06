@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreContactRequest;
@@ -53,19 +53,6 @@ class ContactController extends Controller
      */
     public function update(UpdateContactRequest $request, Contact $contact)
     {
-<<<<<<< HEAD
-        // Get validated (non-file) data
-        $data = $request->validated();
-
-        // If an avatar file is uploaded
-        /** @var \Illuminate\Http\Request $request */
-        if ($request->hasFile('avatar')) {
-            $path = $request->file('avatar')->store('avatars', 'public');
-            $data['avatar'] = $path;
-        }
-
-        // Update the contact
-=======
         $data = $request->validated();
 
         if (isset($data['image'])) {
@@ -73,7 +60,6 @@ class ContactController extends Controller
             $data['image'] = $relativePath;
         }
 
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
         $contact->update($data);
 
         return ApiResponse::success(new ContactResource($contact), 'Contact updated successfully');

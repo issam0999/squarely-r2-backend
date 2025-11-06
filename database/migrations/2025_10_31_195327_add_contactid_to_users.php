@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignIdFor(\App\Models\Contact::class)->nullable()->after('id');
+            $table->foreignId('contact_id')->nullable()
+                ->constrained('contacts')
+                ->cascadeOnDelete();
         });
     }
 
@@ -24,7 +26,6 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign('contact_id');
             $table->dropColumn('contact_id');
-
         });
     }
 };

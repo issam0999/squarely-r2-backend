@@ -21,11 +21,7 @@ class UserResource extends JsonResource
             'verified' => (bool) $this->email_verified_at,
             'created_at' => $this->created_at?->toDateTimeString(),
             'role' =>'admin',
-<<<<<<< HEAD
-            'contact'=>new ContactResource($this->contact),        ];
-=======
             'contact' => new ContactResource($this->whenLoaded('contact')),
         ];
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
     }
 }

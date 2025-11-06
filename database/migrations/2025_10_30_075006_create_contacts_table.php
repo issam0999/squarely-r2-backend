@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('contacts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('center_id')->constrained('centers')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('center_id')->constrained('centers')->cascadeOnDelete();
             $table->unsignedBigInteger('type_id')->comment('1: contact, 2: client');
             $table->string('name');
             $table->string('email')->nullable();
@@ -33,13 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-<<<<<<< HEAD
-        Schema::table('contacts', function (Blueprint $table) {
-            //
-        });
-=======
         Schema::dropIfExists('contacts');
-
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
     }
 };

@@ -2,48 +2,31 @@
 
 namespace App\Models;
 
-<<<<<<< HEAD
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-=======
 use App\Helpers\FileHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
 
 class Contact extends Model
 {
     use HasFactory;
     public const STATUS_ACTIVE = 1;
     public const STATUS_DELETED = 0;
-<<<<<<< HEAD
-=======
     public const TYPE_CONTACT = 1;
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
 
     protected $fillable = [
         'name',
         'email',
         'phone',
-<<<<<<< HEAD
-        'type',
-=======
         'type_id',
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
         'date_of_birth',
         'country_id',
         'center_id',
         'status',
-<<<<<<< HEAD
-        'address','city_id',
-        'image',
-=======
         'address',
         'city_id',
         'image',
         'avatar'
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
     ];
     protected $casts = [
         'date_of_birth' => 'date',
@@ -53,8 +36,6 @@ class Contact extends Model
     {
         return $this->belongsTo(Center::class);
     }
-<<<<<<< HEAD
-=======
 
     /**
      * Get the base path for images.
@@ -81,5 +62,4 @@ class Contact extends Model
         }
         return FileHelper::saveBase64Image($image, $basePath);
     }
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
 }

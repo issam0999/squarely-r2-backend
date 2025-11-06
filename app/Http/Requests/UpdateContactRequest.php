@@ -23,26 +23,15 @@ class UpdateContactRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-<<<<<<< HEAD
-            'center_id' => 'required|exists:centers,id',
-=======
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
             'type_id' => 'nullable|integer',
             'date_of_birth' => 'nullable|date',
             'country_id' => 'nullable|integer',
             'city_id' => 'nullable|integer',
-<<<<<<< HEAD
-            'status' => 'nullable|boolean',
-            'address' => 'nullable|string|max:500',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-
-=======
             'center_id' => 'nullable|exists:centers,id',
             'status' => 'nullable|boolean',
             'image' => 'nullable|string', // base64 string, optional
->>>>>>> 4307c3883626c90fdc7410bdd38355ee166b76cc
         ];
     }
 }
