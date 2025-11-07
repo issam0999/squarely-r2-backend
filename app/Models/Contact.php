@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Helpers\FileHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 class Contact extends Model
@@ -32,7 +33,7 @@ class Contact extends Model
         'date_of_birth' => 'date',
     ];
 
-    public function center()
+    public function center(): BelongsTo
     {
         return $this->belongsTo(Center::class);
     }
@@ -41,7 +42,7 @@ class Contact extends Model
      * Get the base path for images.
      * Can be reused anywhere.
      */
-    public static function getBasePath($centerId)
+    public static function getBasePath($centerId): string
     {
         return 'centers/' . $centerId . '/contacts';
     }
