@@ -19,6 +19,7 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): JsonResponse
     {
         $request->authenticate();
+
         $user = Auth::user()->load('contact');
 
         $token = $user->createToken('main')->plainTextToken;
@@ -34,11 +35,8 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): Response
     {
-        Auth::guard('web')->logout();
-
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
+        $user = $request->user();
+        $user->currentAccessToken()->delete();
 
         return response()->noContent();
     }
