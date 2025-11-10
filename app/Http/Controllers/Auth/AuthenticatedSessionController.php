@@ -27,7 +27,8 @@ class AuthenticatedSessionController extends Controller
         return ApiResponse::success([
             'user' => new UserResource($user),
             'token' => $token,
-        ], 'User registered successfully');
+            'userAbilityRules' => 'admin',
+        ], 'Logged in successfully');
     }
 
     /**

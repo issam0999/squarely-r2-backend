@@ -14,6 +14,17 @@ class CenterResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'description' => $this->description,
+            'location' => $this->location,
+            'phone' => $this->phone,
+            'phone1' => $this->phone1,
+            'email' => $this->email,
+            'email1' => $this->email1,
+            'avatar' => $this->logo,
+            'status' => $this->status ? 'active' : 'inactive',
+        ];
     }
 }

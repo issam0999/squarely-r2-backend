@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description')->nullable();
+            $table->string('subscription_type')->default(1)->comment('1: free, 2: paid');
             $table->string('location')->nullable();
             $table->string('phone')->nullable();
             $table->string('phone1')->nullable();
