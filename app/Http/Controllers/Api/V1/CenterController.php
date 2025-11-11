@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CenterResource;
 use App\Http\Responses\ApiResponse;
+use App\Mail\CenterCreatedMail;
 use App\Models\Center;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class CenterController extends Controller
 {
@@ -26,21 +29,25 @@ class CenterController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:centers,email',
-            'description' => 'string|max:255',
+            'description' => 'string|max:255|nullable',
             'subscription_type' => 'integer',
         ]);
 
         $center = Center::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'description' => $validated['description'],
+            'description' => $validated['description'] || '',
             'subscription_type' => 1,
         ]);
+
+        // Send email
+        Mail::to($center->email)
+            ->queue(new CenterCreatedMail($request->user(), $center));
 
         return ApiResponse::success(
             new CenterResource($center),
