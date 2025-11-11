@@ -3,13 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
@@ -49,12 +52,38 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
     public function contact(): BelongsTo
     {
         return $this->belongsTo(Contact::class);
     }
+
     public function center(): BelongsTo
     {
         return $this->belongsTo(Center::class);
+    }
+
+    /**
+     * Creates a new user.
+     *
+     * @param  array<string, string>  $data
+     */
+    public static function createNew(array $data): User
+    {
+        // First create the contact
+        $contact = Contact::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'center_id' => $data['center_id'] ?? 1,
+            'status' => Contact::STATUS_ACTIVE,
+            'type_id' => Contact::TYPE_CONTACT,
+        ]);
+        $user = User::create([
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'contact_id' => $contact->id,
+        ]);
+
+        return $user;
     }
 }

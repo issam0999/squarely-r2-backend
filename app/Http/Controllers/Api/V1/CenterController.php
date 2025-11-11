@@ -7,8 +7,11 @@ use App\Http\Resources\CenterResource;
 use App\Http\Responses\ApiResponse;
 use App\Mail\CenterCreatedMail;
 use App\Models\Center;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class CenterController extends Controller
@@ -31,28 +34,43 @@ class CenterController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:centers,email',
-            'description' => 'string|max:255|nullable',
-            'subscription_type' => 'integer',
-        ]);
+        DB::beginTransaction();
+        try {
 
-        $center = Center::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'description' => $validated['description'] || '',
-            'subscription_type' => 1,
-        ]);
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:centers,email',
+                'description' => 'string|max:255|nullable',
+                'subscription_type' => 'integer',
+            ]);
 
-        // Send email
-        Mail::to($center->email)
-            ->queue(new CenterCreatedMail($request->user(), $center));
+            $center = Center::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'description' => $validated['description'] || '',
+                'subscription_type' => 1,
+            ]);
 
-        return ApiResponse::success(
-            new CenterResource($center),
-            'Center created successfully'
-        );
+            User::CreateNew([
+                'name' => 'Admin for '.$center->name,
+                'email' => $center->email,
+                'center_id' => $center->id,
+                'password' => Str::password(),
+            ]);
+            DB::commit();
+            // Send email
+            Mail::to($center->email)
+                ->queue(new CenterCreatedMail($request->user(), $center));
+
+            return ApiResponse::success(
+                new CenterResource($center),
+                'Center created successfully'
+            );
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return ApiResponse::error($e->getMessage());
+        }
     }
 
     /**

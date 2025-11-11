@@ -20,7 +20,15 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
-        $user = Auth::user()->load('contact');
+        $user = Auth::user();
+
+        if (! $user->hasVerifiedEmail()) {
+            Auth::logout();
+
+            throw new \Exception('Your email address is not verified.');
+        }
+
+        $user->load('contact');
 
         $token = $user->createToken('main')->plainTextToken;
 
