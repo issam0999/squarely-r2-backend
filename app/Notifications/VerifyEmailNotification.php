@@ -28,6 +28,7 @@ class VerifyEmailNotification extends BaseVerifyEmail
 
         // Optional: strip /api/v1 prefix if frontend route is /verify-email/:id/:hash
         $path = preg_replace('#^/api/v1#', '', $path);
+        var_dump($frontend.$path.($query ? '?'.$query : ''));
 
         return $frontend.$path.($query ? '?'.$query : '');
     }

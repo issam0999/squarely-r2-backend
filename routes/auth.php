@@ -4,8 +4,9 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -25,12 +26,6 @@ Route::prefix('v1')->group(function () {
         ->middleware('guest')
         ->name('password.store');
 
-    Route::get('/verify-email/{id}/{hash}', function (EmailVerificationRequest $request) {
-        $request->fulfill(); // marks email_verified_at
-
-        return response()->json(['message' => 'Email verified successfully.']);
-    })->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
-
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
         ->middleware('auth:sanctum')
         ->name('logout');
@@ -44,7 +39,7 @@ Route::prefix('v1')->group(function () {
             ], 200);
         }
 
-        $user->sendEmailVerificationNotification();
+        $link = $user->sendEmailVerificationNotification();
 
         return response()->json([
             'message' => 'Verification link sent successfully.',
@@ -53,4 +48,35 @@ Route::prefix('v1')->group(function () {
         ->middleware(['auth:sanctum', 'throttle:6,1'])
         ->name('verification.send');
 
+    // Verify Email
+    Route::get('/verify-email/{id}/{hash}', function (Request $request) {
+        $user = User::find($request->route('id'));
+
+        if (! $user) {
+            Log::error('User not found for email verification', ['id' => $request->route('id')]);
+            abort(404, 'User not found.');
+        }
+
+        Log::info('Verifying user', ['id' => $user->id, 'email' => $user->email]);
+
+        if (! hash_equals((string) $request->route('hash'),
+            sha1($user->getEmailForVerification()))) {
+            Log::error('Invalid hash for email verification', [
+                'expected' => sha1($user->getEmailForVerification()),
+                'given' => $request->route('hash'),
+            ]);
+            abort(403, 'Invalid verification link.');
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Email already verified.']);
+        }
+
+        $user->markEmailAsVerified();
+        Log::info(message: 'Email verified successfully');
+
+        return response()->json(['message' => 'Email verified successfully.']);
+    })
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
 });
